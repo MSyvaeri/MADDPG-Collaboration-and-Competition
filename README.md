@@ -19,3 +19,7 @@ To use the code you have to download "Tennis.ipynb" and the files “ddpg_agent.
     Mac OSX: https://s3-us-west-1.amazonaws.com/udacity-drlnd/P3/Tennis/Tennis.app.zip
     Windows (32-bit): https://s3-us-west-1.amazonaws.com/udacity-drlnd/P3/Tennis/Tennis_Windows_x86.zip
     Windows (64-bit): https://s3-us-west-1.amazonaws.com/udacity-drlnd/P3/Tennis/Tennis_Windows_x86_64.zip
+
+Additionally, one has to install requirements, which can be found in the file "requirements.txt". As an alternative one can directly install these packages using:
+
+    pip3 install -r requirements.txt
