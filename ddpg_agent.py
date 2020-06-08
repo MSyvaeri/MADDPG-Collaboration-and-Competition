@@ -56,13 +56,15 @@ class Agent():
         self.actor_network_target = Actor(state_size, action_size, seed).to(device)
         self.actor_optimizer = optim.Adam(self.actor_network_local.parameters(), lr=lr_actor)
         
-        # Actor-Network
+        # Critic-Network
         self.critic_network_local = Critic(state_size, action_size, seed).to(device)
         self.critic_network_target = Critic(state_size, action_size, seed).to(device)
         self.critic_optimizer = optim.Adam(self.critic_network_local.parameters(), lr=lr_critic)
 
         # Replay memory
         self.memory = ReplayBuffer(action_size, buffer_size, batch_size, seed)
+        
+        # initialize counter for number of steps between two network updates
         self.t_step = 0
         
         
