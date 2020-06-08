@@ -15,18 +15,13 @@ from model import Actor, Critic
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
-#BUFFER_SIZE = int(1e5)  # replay buffer size
-#BATCH_SIZE = 128         # minibatch size
-#GAMMA = 0.99            # discount factor
-#TAU = 1e-2             # for soft update of target parameters
-#LR_ACTOR = 1e-4               # learning rate
-#LR_CRITIC = 1e-3               # learning rate 
-#UPDATE_EVERY = 2     # how often to update the network
+
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 class Agent():
+    """Interacts with and learns from the environment."""
     def __init__(self, state_size, action_size, n_agents,seed,
                  buffer_size=int(1e5),batch_size=128,gamma=0.99,tau=1e-2,
                 lr_actor=1e-4,lr_critic=1e-3,update_every=2):
@@ -36,8 +31,15 @@ class Agent():
         ======
             state_size (int): dimension of each state
             action_size (int): dimension of each action
-            
+            n_agents (int): Number of agents which are parallel used 
             seed (int): random seed
+            buffer_size (int): replay buffer size
+            batch_size (int): minibatch size
+            gamma (float): discount factor
+            tau (float): factor for soft update of target parameters
+            lr_actor (float): learning rate of the actor
+            lr_critic (float): learning rate of the critic
+            update_every (int): number of steps between the updates of the network
         """
         self.state_size = state_size
         self.action_size = action_size
@@ -69,17 +71,34 @@ class Agent():
         self.hard_update(self.critic_network_target,self.critic_network_local)
         
     def hard_update(self,target,source):
+        """initialize local and target network with the same weights
+        Params
+        ======
+            local_model: PyTorch model (weights will be copied from)
+            target_model: PyTorch model (weights will be copied to)
+        """
         ##initialize local and target network with the same weights
         for target_params,source_params in zip(target.parameters(),source.parameters()):
             target_params.data.copy_(source_params.data)
         
         
-    def step(self, states, actions, rewards, next_states, dones,episode, learn=True):
+    def step(self, states, actions, rewards, next_states, dones, learn=True):
+        """Save experience in replay memory, and use random sample from buffer to learn.
+        Params
+        ======
+            state (array_like): current states
+            actions (array_like): current actions
+            rewards (array_like): current rewards
+            next_states (array_like): current states
+            dones (boolian): boolian whether this episode is finished
+            learn (boolian): boolian whether the networks should be trained
+        
+        """
         # Save experience in replay memory
         for i in range(self.n_agents):
             self.memory.add(states[i],actions[i],rewards[i],next_states[i],dones[i])
         
-        # Learn every UPDATE_EVERY time steps.
+        # Learn every update_every time steps.
         self.t_step = (self.t_step + 1) % self.update_every
         if self.t_step == 0:
             # If enough samples are available in memory, get random subset and learn
@@ -87,7 +106,7 @@ class Agent():
                 experiences = self.memory.sample()
                 self.learn(experiences)
 
-    def act(self, state, episode,eps):
+    def act(self, state,eps):
         """Returns actions for given state as per current policy.
         
         Params
@@ -128,7 +147,11 @@ class Agent():
         
         Params
         ======
-            experiences (tuple): tuple of states, actions, rewards, next_states, dones
+            state (array_like): current states
+            actions (array_like): current actions
+            rewards (array_like): current rewards
+            next_states (array_like): current states
+            dones (boolian): boolian whether this episode is finished
         """
         
         # Get max predicted Q values (for next states) from target model
@@ -155,7 +178,7 @@ class Agent():
         
         Params
         ======
-            experiences (tuple): tuple of states, actions, rewards, next_states, dones
+            state (array_like): current states
         """
                      
         action_pred=self.actor_network_local(states)
